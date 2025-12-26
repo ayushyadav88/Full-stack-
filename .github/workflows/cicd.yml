@@ -1,4 +1,4 @@
-name: EKS CI/CD
+name: EKS CI/CD Pipeline
 
 on:
   push:
@@ -23,11 +23,15 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and Push Docker Image
+      - name: Build and Push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          # Make sure this matches your ECR Repo name
+          ECR_REPOSITORY: blogging-site 
         run: |
-          # Use your specific ECR Registry URL
-          docker build -t 813948785595.dkr.ecr.us-east-1.amazonaws.com/blogging-site:latest .
-          docker push 813948785595.dkr.ecr.us-east-1.amazonaws.com/blogging-site:latest
+          # Docker handles the Maven build internally now
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Update Kubeconfig
         run: |
@@ -36,3 +40,5 @@ jobs:
       - name: Deploy to EKS
         run: |
           kubectl apply -f deployment.yaml
+          # This forces EKS to pull the fresh image immediately
+          kubectl rollout restart deployment/blogging-site-deployment

@@ -1,22 +1,14 @@
-# STAGE 1: The Builder
-# This stage pulls a heavy image with Maven and the JDK installed.
+# STAGE 1: Build the JAR file
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-
-# Copy the pom.xml and source code into the builder
 COPY . .
-
-# Run the Maven command to create the /target folder and the .jar file
+# This command creates the 'target/' directory that was missing
 RUN mvn clean package -DskipTests
 
-# STAGE 2: The Final Image (Your original base)
-# We switch to the lightweight Alpine image for production.
+# STAGE 2: Run the application
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /usr/src/app
-
-# IMPORTANT: We copy the jar FROM the 'build' stage above, 
-# instead of looking for it on your computer.
+# Copy the built jar from the 'build' stage
 COPY --from=build /app/target/*.jar app.jar
-
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

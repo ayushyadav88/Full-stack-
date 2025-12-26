@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blogging-site-deployment
+  labels:
+    app: blogging-site
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: blogging-site
+  template:
+    metadata:
+      labels:
+        app: blogging-site
+    spec:
+      containers:
+      - name: blogging-site-container
+        # Using your provided account ID, region, and repo name
+        image: 813948785595.dkr.ecr.us-east-1.amazonaws.com/blogging-site:latest
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blogging-site-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: blogging-site
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

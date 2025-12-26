@@ -1,11 +1,14 @@
 FROM eclipse-temurin:17-jdk-alpine
-    
+
+# Port the app runs on
 EXPOSE 8080
- 
-ENV APP_HOME /usr/src/app
 
-COPY target/*.jar $APP_HOME/app.jar
+# Define the working directory
+WORKDIR /usr/src/app
 
-WORKDIR $APP_HOME
+# Copy the jar into the current WORKDIR
+# Using *.jar is fine as long as there is only one jar in the target folder
+COPY target/*.jar app.jar
 
-CMD ["java", "-jar", "app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
